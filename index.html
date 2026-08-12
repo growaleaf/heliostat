@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Heliostat — the mirror-keeper's valley</title>
+<meta name="description" content="An alpine village loses the sun every winter. Place and aim ridge-top mirrors, using real solar geometry, to relay it back down to the people who need it.">
+<meta property="og:title" content="Heliostat">
+<meta property="og:description" content="The mirror-keeper of a valley the sun forgets each winter. Real solar geometry, twelve commissions, one ridge at a time.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2218%22 fill=%22%230a1226%22/><circle cx=%2250%22 cy=%2250%22 r=%2226%22 fill=%22%23ffd35c%22/><g stroke=%22%23ffd35c%22 stroke-width=%226%22 stroke-linecap=%22round%22><line x1=%2250%22 y1=%228%22 x2=%2250%22 y2=%2220%22/><line x1=%2250%22 y1=%2280%22 x2=%2250%22 y2=%2292%22/><line x1=%228%22 y1=%2250%22 x2=%2220%22 y2=%2250%22/><line x1=%2280%22 y1=%2250%22 x2=%2292%22 y2=%2250%22/></g></svg>">
+<style>
+  :root {
+    --sky-top: #0a1226;
+    --sky-mid: #14203f;
+    --gold: #ffd35c;
+    --gold-dim: #c9a13b;
+    --parchment: #eee6d3;
+    --ink: #cfd6e8;
+    --muted: #8b93ad;
+    --ok: #8fd17a;
+    --fail: #e0806b;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-left: env(safe-area-inset-left, 0px);
+    --safe-right: env(safe-area-inset-right, 0px);
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    background: radial-gradient(ellipse at 50% -10%, var(--sky-mid) 0%, var(--sky-top) 60%);
+    color: var(--ink);
+    font-family: Georgia, 'Times New Roman', serif;
+    display: flex;
+    justify-content: center;
+  }
+  #app {
+    width: 100%;
+    max-width: 480px;
+    min-height: 100dvh;
+    padding: calc(18px + var(--safe-top)) calc(16px + var(--safe-right)) calc(18px + var(--safe-bottom)) calc(16px + var(--safe-left));
+    display: flex;
+    flex-direction: column;
+  }
+  .screen { display: flex; flex-direction: column; flex: 1; animation: fadein .25s ease; }
+  @keyframes fadein { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+  h1, h2, h3 { font-weight: normal; margin: 0 0 10px; color: var(--gold); letter-spacing: 0.02em; }
+  h1 { font-size: 1.9rem; text-align: center; }
+  h2 { font-size: 1.2rem; color: var(--parchment); }
+  h3 { font-size: 1rem; color: var(--gold-dim); }
+  p { line-height: 1.5; margin: 0 0 12px; color: var(--ink); }
+
+  .title-screen { align-items: center; justify-content: center; text-align: center; }
+  .sun-emblem { font-size: 2.6rem; margin-bottom: 4px; }
+  .subtitle { color: var(--muted); font-style: italic; margin-bottom: 22px; }
+  .honest-note { font-size: 0.92rem; color: var(--muted); max-width: 38em; margin-bottom: 26px; }
+  .progress-note { font-size: 0.85rem; color: var(--gold-dim); }
+
+  .btn {
+    display: block;
+    width: 100%;
+    max-width: 320px;
+    margin: 0 auto 12px;
+    padding: 13px 18px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,211,92,0.35);
+    background: rgba(255,211,92,0.06);
+    color: var(--parchment);
+    font-family: inherit;
+    font-size: 1rem;
+    text-align: center;
+    cursor: pointer;
+  }
+  .btn.primary { background: var(--gold); border-color: var(--gold); color: #241a06; font-weight: bold; }
+  .btn.ghost { background: transparent; border-color: rgba(255,255,255,0.12); color: var(--muted); font-size: 0.85rem; margin-top: 18px; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn:active:not(:disabled) { transform: scale(0.98); }
+
+  .howto-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; }
+  .howto-card p { margin: 0; color: var(--muted); font-size: 0.92rem; }
+
+  .commission-header { margin-bottom: 6px; }
+  .badge { display: inline-block; font-size: 0.75rem; color: var(--gold-dim); border: 1px solid var(--gold-dim); border-radius: 999px; padding: 2px 9px; margin-bottom: 6px; }
+  .flavor { font-style: italic; color: var(--muted); font-size: 0.92rem; }
+  .window-note { font-size: 0.82rem; color: var(--muted); margin-bottom: 10px; }
+
+  canvas#sky { width: 100%; max-width: 340px; height: auto; aspect-ratio: 1 / 1; margin: 4px auto 8px; display: block; border-radius: 50%; }
+
+  .readout { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 10px; padding: 0 4px; }
+  .readout .ok { color: var(--ok); }
+  .readout .blocked { color: var(--fail); }
+
+  .slider-label { display: block; font-size: 0.78rem; color: var(--muted); margin-bottom: 10px; }
+  input.slider { width: 100%; margin-top: 4px; accent-color: var(--gold); }
+
+  .site-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin: 10px 0 14px; }
+  .site-btn { padding: 9px 6px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.03); color: var(--ink); font-family: inherit; font-size: 0.82rem; cursor: pointer; }
+  .site-btn.selected { background: rgba(255,211,92,0.18); border-color: var(--gold); color: var(--gold); }
+
+  .actions { display: flex; gap: 10px; }
+  .actions .btn { margin-bottom: 8px; }
+
+  .result { font-size: 0.9rem; border-radius: 8px; padding: 10px 12px; margin: 6px 0 10px; }
+  .result.ok { background: rgba(143,209,122,0.12); color: var(--ok); }
+  .result.fail { background: rgba(224,128,107,0.12); color: var(--fail); }
+
+  .share-text { font-size: 0.82rem; color: var(--gold-dim); background: rgba(255,255,255,0.03); border-radius: 8px; padding: 10px 12px; margin-bottom: 12px; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<canvas id="sky" width="340" height="340" style="display:none;"></canvas>
+<script type="module" src="./game.js"></script>
+</body>
+</html>
